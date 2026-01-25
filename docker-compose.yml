@@ -21,8 +21,6 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./localhost.crt:/etc/caddy/cert.pem
-      - ./localhost.key:/etc/caddy/key.pem
       - caddy_data:/data
       - caddy_config:/config
     depends_on:

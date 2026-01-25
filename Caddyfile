@@ -6,5 +6,5 @@
 
 localhost:443 {
     reverse_proxy app:5000
-    tls /etc/caddy/cert.pem /etc/caddy/key.pem
+    tls internal
 }
