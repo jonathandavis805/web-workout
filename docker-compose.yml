@@ -8,7 +8,7 @@ services:
     expose:
       - "5000"
     volumes:
-      - ./data/workouts.db:/app/server/workouts.db
+      - workout_db:/app/server/workouts.db
     environment:
       - FLASK_ENV=production
     restart: unless-stopped
@@ -32,3 +32,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  workout_db:
