@@ -1,0 +1,10 @@
+:80 {
+    # Redirect HTTP to HTTPS
+    header Location "https://{host}{uri}"
+    respond 302
+}
+
+localhost:443 {
+    reverse_proxy app:5000
+    tls /etc/caddy/cert.pem /etc/caddy/key.pem
+}

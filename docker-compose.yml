@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: web-workout:latest
+    container_name: web-workout
+    expose:
+      - "5000"
+    volumes:
+      - ./data/workouts.db:/app/workouts.db
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./localhost.crt:/etc/caddy/cert.pem
+      - ./localhost.key:/etc/caddy/key.pem
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
