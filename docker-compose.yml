@@ -14,19 +14,23 @@ services:
     restart: unless-stopped
 
   caddy:
-    image: caddy:latest
-    container_name: caddy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - app
-    restart: unless-stopped
-
+      build:
+        context: .
+        dockerfile: Caddyfile.dockerfile
+      container_name: caddy
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - ./Caddyfile:/etc/caddy/Caddyfile
+        - ./certs:/etc/caddy/certs
+        - caddy_data:/data
+        - caddy_config:/config
+      environment:
+        - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      depends_on:
+        - app
+      restart: unless-stopped
 volumes:
   caddy_data:
   caddy_config:
