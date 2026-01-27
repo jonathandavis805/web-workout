@@ -116,6 +116,7 @@ class Workout(db.Model):
             "name": self.name,
             "spotifyUrl": self.spotify_url,
             "exercises": [ex.to_dict() for ex in self.exercises],
+            "circuits": self.circuits,
         }
 
 
@@ -195,7 +196,7 @@ def create_workout():
         return jsonify({"error": "Name is required"}), 400
 
     new_workout = Workout(
-        name=data["name"], spotify_url=data.get("spotifyUrl"), user_id=current_user.id
+        name=data["name"], spotify_url=data.get("spotifyUrl"), user_id=current_user.id, circuits=data["circuits"],
     )
     db.session.add(new_workout)
     db.session.flush()
@@ -225,6 +226,7 @@ def update_workout(id):
 
     workout.name = data["name"]
     workout.spotify_url = data.get("spotifyUrl")
+    workout.circuits = data.get("circuits")
 
     # Clear existing exercises
     Exercise.query.filter_by(workout_id=id).delete()

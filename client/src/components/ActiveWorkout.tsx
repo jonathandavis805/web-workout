@@ -128,8 +128,10 @@ export const ActiveWorkout = () => {
     if (workout && currentExerciseIndex < workout.exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
       setTimeLeft(workout.exercises[currentExerciseIndex + 1].duration);
-    } else if(workout && workout.circuits && circuitIndex < workout.circuits) {
+    } else if(workout && workout.circuits && circuitIndex < workout.circuits - 1) {
 	setCircuitIndex(circuitIndex + 1)
+        setCurrentExerciseIndex(0);
+        setTimeLeft(workout.exercises[0].duration);
     } else {
       setIsActive(false);
       setIsFinished(true);

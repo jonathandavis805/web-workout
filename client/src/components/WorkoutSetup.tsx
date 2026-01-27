@@ -23,6 +23,7 @@ export const WorkoutSetup = () => {
           setName(data.name);
           setSpotifyUrl(data.spotifyUrl || '');
           setExercises(data.exercises.sort((a, b) => a.order - b.order));
+	  setCircuits(data.circuits ?? 1);
         })
         .catch(error => {
           console.error(error);
