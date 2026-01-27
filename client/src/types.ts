@@ -16,4 +16,5 @@ export interface Workout {
   name: string;
   exercises: Exercise[];
   spotifyUrl?: string;
+  circuits?: number;
 }

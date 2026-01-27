@@ -9,6 +9,7 @@ export const WorkoutSetup = () => {
   const { id } = useParams<{ id: string }>();
   const [name, setName] = useState('');
   const [spotifyUrl, setSpotifyUrl] = useState('');
+  const [circuits, setCircuits] = useState(1);
   const [exercises, setExercises] = useState<Exercise[]>([
     { name: '', duration: 30, order: 0 }
   ]);
@@ -56,7 +57,7 @@ export const WorkoutSetup = () => {
     if (exercises.length === 0) return alert('Please add at least one exercise');
 
     try {
-      const workoutData = { name, exercises, spotifyUrl };
+      const workoutData = { name, circuits, exercises, spotifyUrl };
       if (id) {
         await updateWorkout(parseInt(id), workoutData);
       } else {
@@ -85,7 +86,7 @@ export const WorkoutSetup = () => {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Workout Name</label>
             <input
@@ -104,6 +105,15 @@ export const WorkoutSetup = () => {
               onChange={(e) => setSpotifyUrl(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1DB954] focus:border-[#1DB954] outline-none transition"
               placeholder="https://open.spotify.com/playlist/..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Default Circuit Count</label>
+            <input
+              type="number"
+              value={circuits}
+              onChange={(e) => setCircuits(parseInt(e.target.value))}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1DB954] focus:border-[#1DB954] outline-none transition"
             />
           </div>
         </div>

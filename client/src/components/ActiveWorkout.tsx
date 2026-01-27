@@ -11,6 +11,7 @@ export const ActiveWorkout = () => {
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [circuitIndex, setCircuitIndex] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   
@@ -127,6 +128,8 @@ export const ActiveWorkout = () => {
     if (workout && currentExerciseIndex < workout.exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
       setTimeLeft(workout.exercises[currentExerciseIndex + 1].duration);
+    } else if(workout && workout.circuits && circuitIndex < workout.circuits) {
+	setCircuitIndex(circuitIndex + 1)
     } else {
       setIsActive(false);
       setIsFinished(true);

@@ -37,7 +37,7 @@ CORS(app, supports_credentials=True)
 app.config["SESSION_TYPE"] = "filesystem"
 
 # Database Configuration
-db_path = os.path.join(basedir, "workouts.db")
+db_path = os.path.join(basedir, "../data/workouts.db")
 # Ensure the directory exists
 os.makedirs(os.path.dirname(db_path), exist_ok=True)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
@@ -108,6 +108,7 @@ class Workout(db.Model):
     exercises = db.relationship(
         "Exercise", backref="workout", cascade="all, delete-orphan", lazy=True
     )
+    circuits = db.Column(db.Integer, nullable=True)
 
     def to_dict(self):
         return {
