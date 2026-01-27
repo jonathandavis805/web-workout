@@ -8,6 +8,9 @@ dependencies = [
     "flask>=3.1.2",
     "flask-cors>=6.0.2",
     "flask-sqlalchemy>=3.1.1",
+    "flask-login>=0.6.3",
+    "flask-session>=0.8.0",
+    "authlib>=1.4.1",
     "python-dotenv>=1.2.1",
     "spotipy>=2.25.2",
 ]

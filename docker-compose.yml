@@ -5,33 +5,17 @@ services:
       dockerfile: Dockerfile
     image: web-workout:latest
     container_name: web-workout
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     volumes:
       - workout_db:/app/server/workouts.db
     environment:
       - FLASK_ENV=production
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - FLASK_SESSION=${FLASK_SESSION}
     restart: unless-stopped
 
-  caddy:
-      build:
-        context: .
-        dockerfile: Caddyfile.dockerfile
-      container_name: caddy
-      ports:
-        - "80:80"
-        - "443:443"
-      volumes:
-        - ./Caddyfile:/etc/caddy/Caddyfile
-        - ./certs:/etc/caddy/certs
-        - caddy_data:/data
-        - caddy_config:/config
-      environment:
-        - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
-      depends_on:
-        - app
-      restart: unless-stopped
 volumes:
-  caddy_data:
-  caddy_config:
   workout_db:

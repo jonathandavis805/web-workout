@@ -1,4 +1,4 @@
-import type { Workout } from './types';
+import type { Workout, User } from './types';
 
 const API_URL = '/api';
 
@@ -55,4 +55,23 @@ export const getSpotifyPlaylist = async () => {
   const response = await fetch(`${API_URL}/spotify/playlist`);
   if (!response.ok) return null;
   return response.json();
+};
+
+// Authentication functions
+export const getUser = async (): Promise<User | null> => {
+  try {
+    const response = await fetch(`${API_URL}/user`);
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+};
+
+export const login = () => {
+  window.location.href = '/login';
+};
+
+export const logout = () => {
+  window.location.href = '/logout';
 };
