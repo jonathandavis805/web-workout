@@ -34,22 +34,6 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-gray-900">Get in the Gruuve</h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-600">Welcome, {user.name}</span>
-              <button
-                onClick={() => window.location.href = '/logout'}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
       <Routes>
         <Route path="/" element={<WorkoutList />} />
         <Route path="/create" element={<WorkoutSetup />} />
