@@ -15,6 +15,7 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
       - FLASK_SESSION=${FLASK_SESSION}
+      - SERVER_NAME=${SERVER_NAME}
     restart: unless-stopped
 
 volumes:

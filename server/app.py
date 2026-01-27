@@ -29,6 +29,8 @@ static_folder = os.path.join(basedir, "static")
 
 app = Flask(__name__, static_folder=static_folder)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
+if server_name := os.getenv("SERVER_NAME"):
+    app.config["SERVER_NAME"] = server_name
 CORS(app, supports_credentials=True)
 
 # Session Configuration
