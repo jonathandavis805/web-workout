@@ -145,6 +145,8 @@ def load_user(user_id):
 @app.route("/login")
 def login():
     redirect_uri = url_for("authorize", _external=True)
+    if not "localhost" in redirect_uri:
+        redirect_uri = redirect_uri.replace("http:", "https:")
     return oauth.google.authorize_redirect(redirect_uri)
 
 
