@@ -91,7 +91,7 @@ export const ActiveWorkout = () => {
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
-  const playBeeps = (sequence) => {
+  const playBeeps = (sequence: number[]) => {
     try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         if (!audioContextRef.current) {
@@ -103,7 +103,7 @@ export const ActiveWorkout = () => {
 
         const ctx = audioContextRef.current;
 	// 2. The function to play a single beep
-	function playBeep(freq, startTime) {
+	function playBeep(freq: number, startTime: number) {
 	    const osc = ctx.createOscillator();
 	    const gain = ctx.createGain();
 
