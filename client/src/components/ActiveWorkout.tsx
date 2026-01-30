@@ -164,8 +164,18 @@ export const ActiveWorkout = () => {
     }
   };
 
-  const toggleTimer = () => setIsActive(!isActive);
+  const toggleTimer = async () => {
+    if (!audioContextRef.current) {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      audioContextRef.current = new AudioContext();
+    }
 
+    if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
+
+    setIsActive(!isActive);
+  };
   const resetWorkout = () => {
     setIsActive(false);
     setIsFinished(false);
