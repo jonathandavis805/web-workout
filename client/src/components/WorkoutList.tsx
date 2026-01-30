@@ -54,13 +54,13 @@ export const WorkoutList = () => {
                 to={`/workout/${workout.id}`}
                 className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition font-medium"
               >
-                <Play size={18} /> Start
+                <Play size={18} /> <span className="hidden sm:inline">Start</span>
               </Link>
               <Link
                 to={`/edit/${workout.id}`}
                 className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium"
               >
-                <Pencil size={18} /> Edit
+                <Pencil size={18} /> <span className="hidden sm:inline">Edit</span>
               </Link>
               <button
                 onClick={() => workout.id && handleDelete(workout.id)}
