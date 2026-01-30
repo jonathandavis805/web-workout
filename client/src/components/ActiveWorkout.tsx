@@ -5,6 +5,7 @@ import type { Workout } from '../types';
 import { Play, Pause, RotateCcw, ArrowLeft, CheckCircle } from 'lucide-react';
 import { SpotifyEmbed } from './SpotifyEmbed';
 
+
 export const ActiveWorkout = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -80,7 +81,6 @@ export const ActiveWorkout = () => {
 
   useEffect(() => {
     let interval: any;
-    
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -88,50 +88,76 @@ export const ActiveWorkout = () => {
     } else if (isActive && timeLeft === 0) {
       handleExerciseComplete();
     }
-
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
-  const playBeep = () => {
+  const playBeeps = (sequence) => {
     try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         if (!audioContextRef.current) {
             audioContextRef.current = new AudioContext();
         }
-        
         if (audioContextRef.current.state === 'suspended') {
             audioContextRef.current.resume();
         }
 
         const ctx = audioContextRef.current;
-        
-        [0, 0.2, 0.4].forEach((delay) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(delay === 0.4 ? 880 : 660, ctx.currentTime + delay);
-            gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-            gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + delay + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + 0.15);
-            osc.start(ctx.currentTime + delay);
-            osc.stop(ctx.currentTime + delay + 0.2);
-        });
+	// 2. The function to play a single beep
+	function playBeep(freq, startTime) {
+	    const osc = ctx.createOscillator();
+	    const gain = ctx.createGain();
+
+	    osc.connect(gain);
+	    gain.connect(ctx.destination);
+
+	    osc.type = 'square';
+	    osc.frequency.setValueAtTime(freq, startTime);
+
+	    // Envelope (The "Shape" of the sound)
+	    // Start at 0 volume
+	    gain.gain.setValueAtTime(0, startTime);
+	    // Quick Attack: Go to 0.2 volume in 0.05 seconds
+	    gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+	    // Decay: Fade out to near zero in 0.3 seconds
+	    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
+
+	    osc.start(startTime);
+	    osc.stop(startTime + 0.3);
+	}
+
+	// 3. Play the sequence!
+	// Change these numbers to play with frequencies quickly
+	const speed = 0.4; // Time between beeps in seconds
+
+	const now = ctx.currentTime;
+
+	sequence.forEach((freq, index) => {
+	    playBeep(freq, now + (index * speed));
+	});
     } catch (e) {
         console.error("Audio play failed", e);
     }
   };
 
   const handleExerciseComplete = () => {
-    playBeep();
     if (workout && currentExerciseIndex < workout.exercises.length - 1) {
-      setCurrentExerciseIndex(prev => prev + 1);
-      setTimeLeft(workout.exercises[currentExerciseIndex + 1].duration);
+	playBeeps([440, 440, 1200]); 
+	setIsActive(false);
+	setTimeout(() => {
+	setIsActive(true)
+	}, 1000)
+	setCurrentExerciseIndex(prev => prev + 1);
+	setTimeLeft(workout.exercises[currentExerciseIndex + 1].duration);
     } else if(workout && workout.circuits && circuitIndex < workout.circuits - 1) {
+	playBeeps([440, 440, 440, 880]); 
+	setIsActive(false);
+	setTimeout(() => {
+	  setIsActive(true)
+	  playBeeps([440, 440, 1200]); 
+	}, 15000)
 	setCircuitIndex(circuitIndex + 1)
-        setCurrentExerciseIndex(0);
-        setTimeLeft(workout.exercises[0].duration);
+	setCurrentExerciseIndex(0);
+	setTimeLeft(workout.exercises[0].duration);
     } else {
       setIsActive(false);
       setIsFinished(true);
@@ -144,6 +170,7 @@ export const ActiveWorkout = () => {
     setIsActive(false);
     setIsFinished(false);
     setCurrentExerciseIndex(0);
+    setCircuitIndex(0);
     if (workout && workout.exercises.length > 0) {
       setTimeLeft(workout.exercises[0].duration);
     }
@@ -223,7 +250,7 @@ export const ActiveWorkout = () => {
             {nextExercise && (
                 <div className="mb-10 text-center">
                     <span className="text-sm uppercase tracking-[0.3em] text-gray-400 font-bold">Up Next</span>
-                    <p className="text-4xl md:text-6xl font-bold text-white mt-2">{nextExercise.name}</p>
+                    <p className="text-2xl md:text-2xl font-bold text-white mt-2">{nextExercise.name}</p>
 		    <p className="text-xl text-white mt-1">{nextExercise.duration} Seconds</p>
                 </div>
             )}
