@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getWorkout } from '../api';
 import type { Workout } from '../types';
 import { Play, Pause, RotateCcw, ArrowLeft, CheckCircle } from 'lucide-react';
-import { SpotifyEmbed } from './SpotifyEmbed';
 
 
 export const ActiveWorkout = () => {
@@ -229,10 +228,6 @@ export const ActiveWorkout = () => {
         <Link to="/" className="text-gray-400 hover:text-white transition p-2">
           <ArrowLeft />
         </Link>
-        <div className="flex-1 flex justify-center min-w-0">
-            <SpotifyEmbed url={workout.spotifyUrl} />
-        </div>
-        <div className="hidden md:block w-10"></div>
       </div>
 
       {/* Main Timer Area */}
@@ -245,9 +240,9 @@ export const ActiveWorkout = () => {
         <div className="relative z-10 text-center space-y-8 w-full px-4">
             <div className="space-y-4">
                <span className="text-gray-400 font-bold uppercase tracking-[0.2em] text-xl">Current Exercise</span>
-               <h2 className="text-[100px] md:text-9xl mt-2 leading-none">{currentExercise.name}</h2>
+               <h2 className="md:text-8xl text-4xl mt-2 leading-none">{currentExercise.name}</h2>
 	    </div>
-	    <div className="text-[100px] md:text-[200px] leading-none tabular-nums text-white">
+	    <div className="md:text-16xl text-8xl leading-none tabular-nums text-white">
                 {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:
                 {(timeLeft % 60).toString().padStart(2, '0')}
             </div>

@@ -8,7 +8,7 @@ export const WorkoutSetup = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [name, setName] = useState('');
-  const [spotifyUrl, setSpotifyUrl] = useState('');
+  // const [spotifyUrl, setSpotifyUrl] = useState('');
   const [circuits, setCircuits] = useState(1);
   const [exercises, setExercises] = useState<Exercise[]>([
     { name: '', duration: 30, order: 0 }
@@ -21,7 +21,7 @@ export const WorkoutSetup = () => {
       getWorkout(parseInt(id))
         .then(data => {
           setName(data.name);
-          setSpotifyUrl(data.spotifyUrl || '');
+          // setSpotifyUrl(data.spotifyUrl || '');
           setExercises(data.exercises.sort((a, b) => a.order - b.order));
 	  setCircuits(data.circuits ?? 1);
         })
@@ -58,7 +58,7 @@ export const WorkoutSetup = () => {
     if (exercises.length === 0) return alert('Please add at least one exercise');
 
     try {
-      const workoutData = { name, circuits, exercises, spotifyUrl };
+      const workoutData = { name, circuits, exercises };
       if (id) {
         await updateWorkout(parseInt(id), workoutData);
       } else {
@@ -96,16 +96,6 @@ export const WorkoutSetup = () => {
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
               placeholder="e.g., Morning Cardio Circuit"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Spotify Playlist URL (Optional)</label>
-            <input
-              type="text"
-              value={spotifyUrl}
-              onChange={(e) => setSpotifyUrl(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1DB954] focus:border-[#1DB954] outline-none transition"
-              placeholder="https://open.spotify.com/playlist/..."
             />
           </div>
           <div>

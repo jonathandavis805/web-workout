@@ -33,9 +33,9 @@ export const WorkoutList = () => {
         <h1 className="text-3xl font-bold text-gray-800">My Workouts</h1>
         <Link
           to="/create"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition sm:px-2"
         >
-          <Plus size={20} /> New Workout
+          <Plus size={20} /> <span className="hidden sm:inline">New Workout</span>
         </Link>
       </div>
 
