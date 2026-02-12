@@ -3,6 +3,7 @@ import { WorkoutList } from './components/WorkoutList';
 import { WorkoutSetup } from './components/WorkoutSetup';
 import { ActiveWorkout } from './components/ActiveWorkout';
 import { AuthProvider, useAuth } from './AuthContext';
+import { PublicWorkoutList } from './components/PublicWorkoutList';
 
 function AppContent() {
   const { user, loading, login } = useAuth();
@@ -36,6 +37,7 @@ function AppContent() {
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       <Routes>
         <Route path="/" element={<WorkoutList />} />
+        <Route path="/browse" element={<PublicWorkoutList />} />
         <Route path="/create" element={<WorkoutSetup />} />
         <Route path="/edit/:id" element={<WorkoutSetup />} />
         <Route path="/workout/:id" element={<ActiveWorkout />} />

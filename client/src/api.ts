@@ -7,6 +7,11 @@ export const getWorkouts = async (): Promise<Workout[]> => {
   if (!response.ok) throw new Error('Failed to fetch workouts');
   return response.json();
 };
+export const getPublicWorkouts = async (): Promise<Workout[]> => {
+  const response = await fetch(`${API_URL}/public/workouts`);
+  if (!response.ok) throw new Error('Failed to fetch workouts');
+  return response.json();
+};
 
 export const getWorkout = async (id: number): Promise<Workout> => {
   const response = await fetch(`${API_URL}/workouts/${id}`);

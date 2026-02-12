@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { createWorkout, getWorkout, updateWorkout } from '../api';
-import type { Exercise } from '../types';
-import { Plus, X, Save, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { createWorkout, getWorkout, updateWorkout } from "../api";
+import type { Exercise } from "../types";
+import { Plus, X, Save, ArrowLeft } from "lucide-react";
 
 export const WorkoutSetup = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   // const [spotifyUrl, setSpotifyUrl] = useState('');
   const [circuits, setCircuits] = useState(1);
+  const [isPublic, setPublic] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([
-    { name: '', duration: 30, order: 0 }
+    { name: "", duration: 30, order: 0 },
   ]);
   const [loading, setLoading] = useState(false);
 
@@ -19,16 +20,17 @@ export const WorkoutSetup = () => {
     if (id) {
       setLoading(true);
       getWorkout(parseInt(id))
-        .then(data => {
+        .then((data) => {
           setName(data.name);
           // setSpotifyUrl(data.spotifyUrl || '');
           setExercises(data.exercises.sort((a, b) => a.order - b.order));
-	  setCircuits(data.circuits ?? 1);
+          setCircuits(data.circuits ?? 1);
+          setPublic(data.isPublic ?? false);
         })
-        .catch(error => {
+        .catch((error) => {
           console.error(error);
-          alert('Failed to load workout');
-          navigate('/');
+          alert("Failed to load workout");
+          navigate("/");
         })
         .finally(() => setLoading(false));
     }
@@ -37,7 +39,7 @@ export const WorkoutSetup = () => {
   const addExercise = () => {
     setExercises([
       ...exercises,
-      { name: '', duration: 30, order: exercises.length }
+      { name: "", duration: 30, order: exercises.length },
     ]);
   };
 
@@ -46,7 +48,11 @@ export const WorkoutSetup = () => {
     setExercises(newExercises.map((ex, i) => ({ ...ex, order: i })));
   };
 
-  const updateExercise = (index: number, field: keyof Exercise, value: string | number) => {
+  const updateExercise = (
+    index: number,
+    field: keyof Exercise,
+    value: string | number,
+  ) => {
     const newExercises = [...exercises];
     newExercises[index] = { ...newExercises[index], [field]: value };
     setExercises(newExercises);
@@ -54,42 +60,46 @@ export const WorkoutSetup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return alert('Please enter a workout name');
-    if (exercises.length === 0) return alert('Please add at least one exercise');
+    if (!name.trim()) return alert("Please enter a workout name");
+    if (exercises.length === 0)
+      return alert("Please add at least one exercise");
 
     try {
-      const workoutData = { name, circuits, exercises };
+      const workoutData = { name, circuits, exercises, isPublic };
       if (id) {
         await updateWorkout(parseInt(id), workoutData);
       } else {
         await createWorkout(workoutData);
       }
-      navigate('/');
+      navigate("/");
     } catch (error) {
       console.error(error);
-      alert('Failed to save workout');
+      alert("Failed to save workout");
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading workout data...</div>;
+  if (loading)
+    return <div className="p-8 text-center">Loading workout data...</div>;
 
   return (
     <div className="max-w-3xl mx-auto p-6">
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate("/")}
         className="flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-6"
       >
         <ArrowLeft size={20} /> Back to Dashboard
       </button>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        {id ? 'Edit Workout' : 'Create New Workout'}
+        {id ? "Edit Workout" : "Create New Workout"}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Workout Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Workout Name
+            </label>
             <input
               type="text"
               value={name}
@@ -98,14 +108,27 @@ export const WorkoutSetup = () => {
               placeholder="e.g., Morning Cardio Circuit"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Default Circuit Count</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Default Circuit Count
+            </label>
             <input
               type="number"
               value={circuits}
               onChange={(e) => setCircuits(parseInt(e.target.value))}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1DB954] focus:border-[#1DB954] outline-none transition"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Make Public
+            </label>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" onChange={(e) => setPublic(e.target.checked)} checked={isPublic} className="sr-only peer" />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
+            </label>
           </div>
         </div>
 
@@ -122,23 +145,38 @@ export const WorkoutSetup = () => {
           </div>
 
           {exercises.map((exercise, index) => (
-            <div key={index} className="flex gap-4 items-start bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <span className="mt-3 text-gray-400 font-mono w-6">{index + 1}.</span>
+            <div
+              key={index}
+              className="flex gap-4 items-start bg-gray-50 p-4 rounded-lg border border-gray-200"
+            >
+              <span className="mt-3 text-gray-400 font-mono w-6">
+                {index + 1}.
+              </span>
               <div className="flex-1 space-y-3">
                 <input
                   type="text"
                   value={exercise.name}
-                  onChange={(e) => updateExercise(index, 'name', e.target.value)}
+                  onChange={(e) =>
+                    updateExercise(index, "name", e.target.value)
+                  }
                   className="w-full px-3 py-2 rounded border border-gray-300 focus:ring-1 focus:ring-blue-500 outline-none"
                   placeholder="Exercise Name (e.g., Pushups)"
                   required
                 />
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-500">Duration (sec):</label>
+                  <label className="text-sm text-gray-500">
+                    Duration (sec):
+                  </label>
                   <input
                     type="number"
                     value={exercise.duration}
-                    onChange={(e) => updateExercise(index, 'duration', parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateExercise(
+                        index,
+                        "duration",
+                        parseInt(e.target.value) || 0,
+                      )
+                    }
                     className="w-24 px-3 py-2 rounded border border-gray-300 focus:ring-1 focus:ring-blue-500 outline-none"
                     min="1"
                   />
@@ -160,7 +198,7 @@ export const WorkoutSetup = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
           >
-            <Save size={24} /> {id ? 'Update Workout' : 'Save Workout'}
+            <Save size={24} /> {id ? "Update Workout" : "Save Workout"}
           </button>
         </div>
       </form>

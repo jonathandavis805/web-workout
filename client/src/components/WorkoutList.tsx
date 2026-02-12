@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getWorkouts, deleteWorkout } from '../api';
 import type { Workout } from '../types';
-import { Trash2, Play, Plus, Pencil } from 'lucide-react';
+import { Trash2, Play, Plus, Pencil, Search } from 'lucide-react';
 
 export const WorkoutList = () => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -36,6 +36,12 @@ export const WorkoutList = () => {
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition sm:px-2"
         >
           <Plus size={20} /> <span className="hidden sm:inline">New Workout</span>
+        </Link>
+        <Link
+          to="/browse"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition sm:px-2"
+        >
+          <Search size={20} /> <span className="hidden sm:inline">Browse</span>
         </Link>
       </div>
 

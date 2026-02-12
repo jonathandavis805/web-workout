@@ -21,6 +21,8 @@ from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
 
+from migrate import migrate_database
+
 load_dotenv()
 
 # Define the absolute path to the static folder
@@ -61,6 +63,7 @@ oauth.register(
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )
+page_len = 5
 
 
 # Models
@@ -102,6 +105,7 @@ class User(UserMixin, db.Model):
 
 class Workout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    is_public = db.Column(db.Boolean, nullable=True)
     name = db.Column(db.String(100), nullable=False)
     spotify_url = db.Column(db.String(200), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -117,6 +121,7 @@ class Workout(db.Model):
             "spotifyUrl": self.spotify_url,
             "exercises": [ex.to_dict() for ex in self.exercises],
             "circuits": self.circuits,
+            "isPublic": self.is_public
         }
 
 
@@ -179,7 +184,15 @@ def get_user():
 @app.route("/api/workouts", methods=["GET"])
 @login_required
 def get_workouts():
-    workouts = Workout.query.filter_by(user_id=current_user.id).all()
+    workouts = Workout.query.filter_by(user_id=current_user.id).limit(5).all()
+    return jsonify([w.to_dict() for w in workouts])
+
+# API Routes
+@app.route("/api/public/workouts", methods=["GET"])
+@login_required
+def get_public_workouts():
+    page = int(request.args.get("page", "0"))
+    workouts = Workout.query.filter_by(is_public=True).offset(page * page_len).limit(page_len).all()
     return jsonify([w.to_dict() for w in workouts])
 
 
@@ -198,7 +211,7 @@ def create_workout():
         return jsonify({"error": "Name is required"}), 400
 
     new_workout = Workout(
-        name=data["name"], spotify_url=data.get("spotifyUrl"), user_id=current_user.id, circuits=data["circuits"],
+        name=data["name"], spotify_url=data.get("spotifyUrl"), user_id=current_user.id, circuits=data["circuits"], is_public=data.get("isPublic", False)
     )
     db.session.add(new_workout)
     db.session.flush()
@@ -229,6 +242,7 @@ def update_workout(id):
     workout.name = data["name"]
     workout.spotify_url = data.get("spotifyUrl")
     workout.circuits = data.get("circuits")
+    workout.is_public = data.get("isPublic", False)
 
     # Clear existing exercises
     Exercise.query.filter_by(workout_id=id).delete()
@@ -274,8 +288,9 @@ def serve(path):
 
 if __name__ == "__main__":
     # Ensure database directory exists
-    db_path = os.path.join(basedir, "workouts.db")
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    migrate_database(db_path)
+    
 
     with app.app_context():
         db.create_all()

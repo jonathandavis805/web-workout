@@ -21,6 +21,8 @@ COPY --from=client-builder /app/client/dist ./static
 
 # Copy server code
 COPY server/app.py ./
+COPY server/migrate.py ./
+COPY server/__init__.py ./
 
 # Set environment variables
 ENV FLASK_APP=app.py

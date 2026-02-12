@@ -9,9 +9,7 @@ import sqlite3
 from datetime import datetime
 
 
-def migrate_database():
-    db_path = os.path.join(os.path.dirname(__file__), "workouts.db")
-
+def migrate_database(db_path: str):
     if not os.path.exists(db_path):
         print("No existing database found. A new one will be created.")
         return
@@ -49,7 +47,7 @@ def migrate_database():
             # Add user_id column to workout table
             print("Adding user_id to workout table...")
             cursor.execute(
-                "ALTER TABLE workout ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1"
+                "ALTER TABLE workout ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1;"
             )
 
             # Update existing workouts to belong to default user
@@ -57,10 +55,33 @@ def migrate_database():
                 "UPDATE workout SET user_id = ? WHERE user_id = 1", (default_user_id,)
             )
 
-            print("Migration completed successfully!")
         else:
             print("User table already exists. Skipping migration.")
+        
+        cursor.execute(
+            "SELECT name FROM pragma_table_info('workout') WHERE name = 'is_public'; "
+        )
+        result = cursor.fetchone()
+        print(result)
+        if not result:
+            print("adding is_public to workouts table")
+            cursor.execute(
+                "ALTER TABLE workout ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0;"
+            )
+        else:
+            print("is_public exists. Skipping migration.")
+        cursor.execute(
+            "SELECT name FROM pragma_table_info('workout') WHERE name = 'circuits'; "
+        )
+        result = cursor.fetchone()
+        print(result)
+        if not result:
+            cursor.execute(
+                "ALTER TABLE workout ADD COLUMN circuits INTEGER NOT NULL DEFAULT 1;"
+            )
+        print("circuits exists. Skipping migration.")
 
+        print("Migration completed successfully!")
     except Exception as e:
         print(f"Migration failed: {e}")
         conn.rollback()
