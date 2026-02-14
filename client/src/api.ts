@@ -1,4 +1,4 @@
-import type { Workout, User } from './types';
+import type { Workout, User, WorkoutCompletion } from './types';
 
 const API_URL = '/api';
 
@@ -79,4 +79,20 @@ export const login = () => {
 
 export const logout = () => {
   window.location.href = '/logout';
+};
+
+export const completeWorkout = async (id: number, durationSeconds?: number): Promise<WorkoutCompletion> => {
+  const response = await fetch(`${API_URL}/workouts/${id}/complete`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ duration_seconds: durationSeconds }),
+  });
+  if (!response.ok) throw new Error('Failed to complete workout');
+  return response.json();
+};
+
+export const getWorkoutCompletions = async (): Promise<WorkoutCompletion[]> => {
+  const response = await fetch(`${API_URL}/workout-completions`);
+  if (!response.ok) throw new Error('Failed to fetch workout completions');
+  return response.json();
 };

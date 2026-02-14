@@ -57,7 +57,7 @@ def migrate_database(db_path: str):
 
         else:
             print("User table already exists. Skipping migration.")
-        
+
         cursor.execute(
             "SELECT name FROM pragma_table_info('workout') WHERE name = 'is_public'; "
         )
@@ -80,6 +80,35 @@ def migrate_database(db_path: str):
                 "ALTER TABLE workout ADD COLUMN circuits INTEGER NOT NULL DEFAULT 1;"
             )
         print("circuits exists. Skipping migration.")
+
+        # Check if workout_completion table already exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='workout_completion'"
+        )
+        completion_table_exists = cursor.fetchone()
+
+        if not completion_table_exists:
+            print("Creating workout_completion table...")
+            cursor.execute("""
+                CREATE TABLE workout_completion (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    workout_id INTEGER NOT NULL,
+                    completed_at DATETIME NOT NULL,
+                    duration_seconds INTEGER NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES user (id),
+                    FOREIGN KEY (workout_id) REFERENCES workout (id)
+                )
+            """)
+            print("Creating indexes for workout_completion table...")
+            cursor.execute(
+                "CREATE INDEX idx_workout_completion_user_id ON workout_completion (user_id);"
+            )
+            cursor.execute(
+                "CREATE INDEX idx_workout_completion_completed_at ON workout_completion (completed_at);"
+            )
+        else:
+            print("Workout completion table already exists. Skipping migration.")
 
         print("Migration completed successfully!")
     except Exception as e:

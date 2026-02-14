@@ -19,3 +19,11 @@ export interface Workout {
   circuits?: number;
   isPublic?: boolean;
 }
+
+export interface WorkoutCompletion {
+  id: number;
+  workout_id: number;
+  completed_at: string;
+  duration_seconds: number;
+  workout_name?: string;
+}

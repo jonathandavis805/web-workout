@@ -19,6 +19,7 @@ from flask_login import (
 )
 from authlib.integrations.flask_client import OAuth
 import os
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 from migrate import migrate_database
@@ -121,7 +122,7 @@ class Workout(db.Model):
             "spotifyUrl": self.spotify_url,
             "exercises": [ex.to_dict() for ex in self.exercises],
             "circuits": self.circuits,
-            "isPublic": self.is_public
+            "isPublic": self.is_public,
         }
 
 
@@ -138,6 +139,27 @@ class Exercise(db.Model):
             "name": self.name,
             "duration": self.duration,
             "order": self.order,
+        }
+
+
+class WorkoutCompletion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    workout_id = db.Column(db.Integer, db.ForeignKey("workout.id"), nullable=False)
+    completed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    duration_seconds = db.Column(db.Integer, nullable=False)
+
+    # Relationships for easy querying
+    user = db.relationship("User", backref="workout_completions")
+    workout = db.relationship("Workout", backref="completions")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "workout_id": self.workout_id,
+            "completed_at": self.completed_at.isoformat(),
+            "duration_seconds": self.duration_seconds,
+            "workout_name": self.workout.name,
         }
 
 
@@ -187,12 +209,18 @@ def get_workouts():
     workouts = Workout.query.filter_by(user_id=current_user.id).limit(5).all()
     return jsonify([w.to_dict() for w in workouts])
 
+
 # API Routes
 @app.route("/api/public/workouts", methods=["GET"])
 @login_required
 def get_public_workouts():
     page = int(request.args.get("page", "0"))
-    workouts = Workout.query.filter_by(is_public=True).offset(page * page_len).limit(page_len).all()
+    workouts = (
+        Workout.query.filter_by(is_public=True)
+        .offset(page * page_len)
+        .limit(page_len)
+        .all()
+    )
     return jsonify([w.to_dict() for w in workouts])
 
 
@@ -211,7 +239,11 @@ def create_workout():
         return jsonify({"error": "Name is required"}), 400
 
     new_workout = Workout(
-        name=data["name"], spotify_url=data.get("spotifyUrl"), user_id=current_user.id, circuits=data["circuits"], is_public=data.get("isPublic", False)
+        name=data["name"],
+        spotify_url=data.get("spotifyUrl"),
+        user_id=current_user.id,
+        circuits=data["circuits"],
+        is_public=data.get("isPublic", False),
     )
     db.session.add(new_workout)
     db.session.flush()
@@ -270,6 +302,48 @@ def delete_workout(id):
     return jsonify({"message": "Workout deleted"})
 
 
+@app.route("/api/workouts/<int:id>/complete", methods=["POST"])
+@login_required
+def complete_workout(id):
+    workout = Workout.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    data = request.get_json() or {}
+
+    # Calculate total duration
+    total_duration = sum(ex.duration for ex in workout.exercises) * (
+        workout.circuits or 1
+    )
+
+    completion = WorkoutCompletion(
+        user_id=current_user.id,
+        workout_id=id,
+        duration_seconds=data.get("duration_seconds", total_duration),
+        completed_at=datetime.utcnow(),
+    )
+
+    db.session.add(completion)
+    db.session.commit()
+
+    return jsonify(completion.to_dict()), 201
+
+
+@app.route("/api/workout-completions", methods=["GET"])
+@login_required
+def get_workout_completions():
+    # Get completions for the last 365 days
+    start_date = datetime.utcnow() - timedelta(days=365)
+
+    completions = (
+        WorkoutCompletion.query.filter(
+            WorkoutCompletion.user_id == current_user.id,
+            WorkoutCompletion.completed_at >= start_date,
+        )
+        .order_by(WorkoutCompletion.completed_at.desc())
+        .all()
+    )
+
+    return jsonify([c.to_dict() for c in completions])
+
+
 # Catch-all route to serve the React App
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -290,7 +364,6 @@ if __name__ == "__main__":
     # Ensure database directory exists
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     migrate_database(db_path)
-    
 
     with app.app_context():
         db.create_all()

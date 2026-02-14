@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getWorkout } from '../api';
+import { getWorkout, completeWorkout } from '../api';
 import type { Workout } from '../types';
 import { Play, Pause, RotateCcw, ArrowLeft, CheckCircle } from 'lucide-react';
 
@@ -157,9 +157,15 @@ export const ActiveWorkout = () => {
 	setCircuitIndex(circuitIndex + 1)
 	setCurrentExerciseIndex(0);
 	setTimeLeft(workout.exercises[0].duration);
-    } else {
+} else {
       setIsActive(false);
       setIsFinished(true);
+      
+      // Auto-log workout completion
+      if (workout && workout.id) {
+        const totalDuration = workout.exercises.reduce((sum, ex) => sum + ex.duration, 0) * (workout.circuits || 1);
+        completeWorkout(workout.id, totalDuration).catch(console.error);
+      }
     }
   };
 
