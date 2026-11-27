@@ -19,6 +19,9 @@ from flask_login import (
 )
 from authlib.integrations.flask_client import OAuth
 import os
+import hashlib
+import secrets
+from functools import wraps
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
@@ -38,6 +41,8 @@ CORS(app, supports_credentials=True)
 
 # Session Configuration
 app.config["SESSION_TYPE"] = "filesystem"
+# CORS allows any origin with credentials, so keep the session cookie off cross-site requests.
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # Database Configuration
 db_path = os.path.join(basedir, "../data/workouts.db")
@@ -160,6 +165,23 @@ class WorkoutCompletion(db.Model):
             "completed_at": self.completed_at.isoformat(),
             "duration_seconds": self.duration_seconds,
             "workout_name": self.workout.name,
+        }
+
+
+class TvDevice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=True)
+    token_hash = db.Column(db.String(64), unique=True, nullable=False)
+    pair_code = db.Column(db.String(6), unique=True, nullable=True)
+    pair_expires_at = db.Column(db.DateTime, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    paired_at = db.Column(db.DateTime, nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "pairedAt": self.paired_at.isoformat() if self.paired_at else None,
         }
 
 
@@ -342,6 +364,136 @@ def get_workout_completions():
     )
 
     return jsonify([c.to_dict() for c in completions])
+
+
+# TV pairing: the TV gets a short code plus a secret token, the user enters the
+# code on the website, and from then on the TV authenticates with the token.
+PAIR_CODE_TTL = timedelta(minutes=10)
+PAIR_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def hash_token(token):
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def tv_device_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        device = (
+            TvDevice.query.filter_by(token_hash=hash_token(token)).first()
+            if token
+            else None
+        )
+        if not device:
+            return jsonify({"error": "Unknown device"}), 401
+        return f(device, *args, **kwargs)
+
+    return wrapper
+
+
+def paired_tv_required(f):
+    @wraps(f)
+    @tv_device_required
+    def wrapper(device, *args, **kwargs):
+        if not device.user_id:
+            return jsonify({"error": "Device not paired"}), 403
+        return f(device, *args, **kwargs)
+
+    return wrapper
+
+
+@app.route("/api/tv/pair/start", methods=["POST"])
+def tv_pair_start():
+    now = datetime.utcnow()
+    TvDevice.query.filter(
+        TvDevice.user_id.is_(None), TvDevice.pair_expires_at < now
+    ).delete()
+
+    code = "".join(secrets.choice(PAIR_CODE_ALPHABET) for _ in range(6))
+    while TvDevice.query.filter_by(pair_code=code).first():
+        code = "".join(secrets.choice(PAIR_CODE_ALPHABET) for _ in range(6))
+
+    token = secrets.token_urlsafe(32)
+    data = request.get_json(silent=True) or {}
+    device = TvDevice(
+        name=(data.get("name") or "")[:100] or None,
+        token_hash=hash_token(token),
+        pair_code=code,
+        pair_expires_at=now + PAIR_CODE_TTL,
+    )
+    db.session.add(device)
+    db.session.commit()
+    return jsonify(
+        {"code": code, "token": token, "expiresIn": int(PAIR_CODE_TTL.total_seconds())}
+    ), 201
+
+
+@app.route("/api/tv/pair/status", methods=["GET"])
+@tv_device_required
+def tv_pair_status(device):
+    paired = device.user_id is not None
+    expired = not paired and device.pair_expires_at < datetime.utcnow()
+    return jsonify({"paired": paired, "expired": expired})
+
+
+@app.route("/api/tv/pair/claim", methods=["POST"])
+@login_required
+def tv_pair_claim():
+    data = request.get_json() or {}
+    code = str(data.get("code", "")).strip().upper()
+    device = TvDevice.query.filter(
+        TvDevice.pair_code == code,
+        TvDevice.user_id.is_(None),
+        TvDevice.pair_expires_at >= datetime.utcnow(),
+    ).first()
+    if not code or not device:
+        return jsonify({"error": "Code not found or expired"}), 404
+
+    device.user_id = current_user.id
+    device.paired_at = datetime.utcnow()
+    device.pair_code = None
+    db.session.commit()
+    return jsonify(device.to_dict())
+
+
+@app.route("/api/tv/devices", methods=["GET"])
+@login_required
+def get_tv_devices():
+    devices = TvDevice.query.filter_by(user_id=current_user.id).all()
+    return jsonify([d.to_dict() for d in devices])
+
+
+@app.route("/api/tv/devices/<int:id>", methods=["DELETE"])
+@login_required
+def delete_tv_device(id):
+    device = TvDevice.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    db.session.delete(device)
+    db.session.commit()
+    return jsonify({"message": "TV unpaired"})
+
+
+@app.route("/api/tv/workouts", methods=["GET"])
+@paired_tv_required
+def get_tv_workouts(device):
+    workouts = Workout.query.filter_by(user_id=device.user_id).all()
+    return jsonify([w.to_dict() for w in workouts])
+
+
+@app.route("/api/tv/workouts/<int:id>/complete", methods=["POST"])
+@paired_tv_required
+def complete_tv_workout(device, id):
+    workout = Workout.query.filter_by(id=id, user_id=device.user_id).first_or_404()
+    completion = WorkoutCompletion(
+        user_id=device.user_id,
+        workout_id=id,
+        duration_seconds=sum(ex.duration for ex in workout.exercises)
+        * (workout.circuits or 1),
+        completed_at=datetime.utcnow(),
+    )
+    db.session.add(completion)
+    db.session.commit()
+    return jsonify(completion.to_dict()), 201
 
 
 # Catch-all route to serve the React App

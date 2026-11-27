@@ -5,6 +5,7 @@ import { ActiveWorkout } from './components/ActiveWorkout';
 import { WorkoutHeatmap } from './components/WorkoutHeatmap';
 import { AuthProvider, useAuth } from './AuthContext';
 import { PublicWorkoutList } from './components/PublicWorkoutList';
+import { PairTv } from './components/PairTv';
 
 function AppContent() {
 	const { user, loading, login } = useAuth();
@@ -43,6 +44,7 @@ function AppContent() {
 				<Route path="/edit/:id" element={<WorkoutSetup />} />
 				<Route path="/workout/:id" element={<ActiveWorkout />} />
 				<Route path="/stats" element={<WorkoutHeatmap />} />
+				<Route path="/tv" element={<PairTv />} />
 			</Routes>
 		</div>
 	);

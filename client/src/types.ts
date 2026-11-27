@@ -27,3 +27,9 @@ export interface WorkoutCompletion {
   duration_seconds: number;
   workout_name?: string;
 }
+
+export interface TvDevice {
+  id: number;
+  name: string | null;
+  pairedAt: string | null;
+}
