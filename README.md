@@ -24,6 +24,10 @@ Hosted on Cloudflare Pages at https://gruuveworkout.com. The React client lives 
 
    This builds the client, applies migrations to a local D1 database and serves everything at http://localhost:8788. For hot reload, also run `npm --prefix client run dev` and use the Vite URL; it proxies the API to port 8788.
 
+## Testing
+
+`npm run build && npm test` runs the API end-to-end against a throwaway local D1 database. CI runs it on every PR.
+
 ## Deploying
 
 Pushes to `main` deploy through GitHub Actions, which needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. To deploy by hand: `npm run deploy`.

@@ -82,12 +82,12 @@ async function loadWorkouts(env: Env, where: string, ...binds: unknown[]) {
     .all<WorkoutRow>();
   if (workouts.length === 0) return [];
 
-  const ids = workouts.map((w) => w.id);
+  // Subquery rather than an IN list of ids: D1 caps bound parameters at 100 per query.
   const { results: exercises } = await env.DB.prepare(
     `SELECT id, workout_id, name, duration, "order" FROM exercise
-     WHERE workout_id IN (${ids.map(() => "?").join(",")}) ORDER BY "order", id`,
+     WHERE workout_id IN (SELECT id FROM workout WHERE ${where}) ORDER BY "order", id`,
   )
-    .bind(...ids)
+    .bind(...binds)
     .all<ExerciseRow>();
 
   return workouts.map((w) => ({
