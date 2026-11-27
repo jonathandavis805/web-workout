@@ -2,7 +2,7 @@
 
 Workout timer: build interval workouts on the web, run them on your phone, computer or Roku TV.
 
-Hosted on Cloudflare Pages at https://gruuve.bookrecs.dev. The React client lives in `client/`, the API runs as Pages Functions (`functions/` → `server/`) on a D1 database (`migrations/`), and the Roku channel is in `roku/`.
+Hosted on Cloudflare Pages at https://gruuveworkout.com. The React client lives in `client/`, the API runs as Pages Functions (`functions/` → `server/`) on a D1 database (`migrations/`), and the Roku channel is in `roku/`.
 
 ## Local development
 

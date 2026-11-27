@@ -8,7 +8,7 @@ A Roku channel that pairs with your Gruuve account and plays your workouts on th
 2. Sideload the channel:
 
    ```bash
-   SERVER_URL=https://gruuve.bookrecs.dev \
+   SERVER_URL=https://gruuveworkout.com \
    ROKU_IP=<roku-ip> ROKU_DEV_PASSWORD=<password> \
    ./deploy.sh
    ```
