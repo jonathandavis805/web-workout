@@ -2,7 +2,7 @@
 # Builds the Gruuve Roku channel and sideloads it onto a Roku in developer mode.
 set -euo pipefail
 
-: "${SERVER_URL:?Set SERVER_URL to the Gruuve server the TV talks to, e.g. http://192.168.1.20:5000}"
+: "${SERVER_URL:?Set SERVER_URL to the Gruuve server the TV talks to, e.g. https://gruuve.bookrecs.dev}"
 WEB_URL="${WEB_URL:-$SERVER_URL}"
 
 here="$(cd "$(dirname "$0")" && pwd)"

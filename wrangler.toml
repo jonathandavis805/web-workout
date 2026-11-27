@@ -1,0 +1,11 @@
+name = "gruuve"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "client/dist"
+
+[dev]
+port = 8788
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gruuve-db"
+database_id = "530f8f47-4850-42d2-b09d-e3b1eba5a4d1"
