@@ -22,6 +22,10 @@ export default defineConfig({
         target: 'http://localhost:8788',
         changeOrigin: true,
       },
+      '/review': {
+        target: 'http://localhost:8788',
+        changeOrigin: true,
+      },
     },
   },
 })

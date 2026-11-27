@@ -1,6 +1,7 @@
 sub init()
     m.registry = CreateObject("roRegistrySection", "gruuve")
     m.screen = invalid
+    m.launchSignaled = false
     if m.registry.Exists("token")
         showWorkoutList()
     else
@@ -13,6 +14,10 @@ sub showScreen(screen as object)
     m.screen = screen
     m.top.appendChild(screen)
     screen.setFocus(true)
+    if not m.launchSignaled
+        m.top.signalBeacon("AppLaunchComplete")
+        m.launchSignaled = true
+    end if
 end sub
 
 sub showPairing()

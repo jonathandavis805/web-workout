@@ -28,3 +28,18 @@ A Roku channel that pairs with your Gruuve account and plays your workouts on th
 - **\***: refresh the workout list
 
 Unpair a TV from the website's **TV** page. The TV goes back to the pairing screen the next time it loads your workouts.
+
+## Publishing to the Channel Store
+
+1. Generate a signing key on the Roku once: run `nc <roku-ip> 8080`, type `genkey`, and save the password and DevID it prints in a password manager. Every store update must be signed with this key. If you change Rokus, rekey the new one at `http://<roku-ip>/plugin_package` using a previous `.pkg` and the password.
+2. Bump `build_version` (or `minor_version`) in `manifest`; the store rejects a version it already has.
+3. Build, sideload and sign:
+
+   ```bash
+   SERVER_URL=https://gruuveworkout.com \
+   ROKU_IP=<roku-ip> ROKU_DEV_PASSWORD=<password> ROKU_SIGN_PASSWORD=<genkey password> \
+   ./deploy.sh
+   ```
+
+   This writes `build/gruuve-<version>.pkg`.
+4. Upload the `.pkg` at [developer.roku.com](https://developer.roku.com) under your channel's **Package Upload**. Use `https://gruuveworkout.com/privacy` as the privacy policy URL.

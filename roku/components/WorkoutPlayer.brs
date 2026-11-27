@@ -12,7 +12,6 @@ sub init()
     m.roundSound = m.top.findNode("roundSound")
     m.ticker = m.top.findNode("ticker")
     m.ticker.observeField("fire", "onTick")
-    m.appManager = CreateObject("roAppManager")
 end sub
 
 sub reset()
@@ -32,6 +31,7 @@ end sub
 
 sub setRunning(running as boolean)
     m.running = running
+    m.global.keepAwake = running
     if running
         m.started = true
         m.ticker.control = "start"
@@ -41,8 +41,6 @@ sub setRunning(running as boolean)
 end sub
 
 sub onTick()
-    ' No remote presses during a workout, so keep the screensaver from kicking in.
-    if m.appManager <> invalid then m.appManager.UpdateLastKeyPressTime()
     m.timeLeft = m.timeLeft - 1
     if m.timeLeft <= 0
         if m.phase = "work"
