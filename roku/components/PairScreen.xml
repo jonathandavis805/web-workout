@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="PairScreen" extends="Group">
+    <interface>
+        <field id="token" type="string" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/components/api.brs" />
+    <script type="text/brightscript" uri="pkg:/components/PairScreen.brs" />
+    <children>
+        <Label text="Gruuve" translation="[0,160]" width="1920" horizAlign="center" color="0xFFFFFFFF">
+            <Font role="font" uri="font:BoldSystemFontFile" size="96" />
+        </Label>
+        <Label id="instructions" translation="[160,340]" width="1600" horizAlign="center" wrap="true" color="0x9CA3AFFF">
+            <Font role="font" uri="font:SystemFontFile" size="48" />
+        </Label>
+        <Label id="code" text="--- ---" translation="[0,500]" width="1920" horizAlign="center" color="0xFFFFFFFF">
+            <Font role="font" uri="font:BoldSystemFontFile" size="220" />
+        </Label>
+        <Label id="status" translation="[0,880]" width="1920" horizAlign="center" color="0x6B7280FF">
+            <Font role="font" uri="font:SystemFontFile" size="36" />
+        </Label>
+        <Timer id="pollTimer" duration="3" repeat="true" />
+        <Timer id="retryTimer" duration="5" />
+    </children>
+</component>

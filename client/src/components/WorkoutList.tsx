@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getWorkouts, deleteWorkout } from '../api';
 import type { Workout } from '../types';
-import { Trash2, Play, Plus, Pencil, Search } from 'lucide-react';
+import { Trash2, Play, Plus, Pencil, Search, Tv } from 'lucide-react';
 
 export const WorkoutList = () => {
 	const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -43,6 +43,12 @@ export const WorkoutList = () => {
 					className="m-2 flex flex-none items-center gap-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 hover:text-gray-900 transition font-medium"
 				>
 					<Search size={20} /> <span className="hidden sm:inline">Browse</span>
+				</Link>
+				<Link
+					to="/tv"
+					className="m-2 flex flex-none items-center gap-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 hover:text-gray-900 transition font-medium"
+				>
+					<Tv size={20} /> <span className="hidden sm:inline">TV</span>
 				</Link>
 			</div>
 

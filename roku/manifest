@@ -1,0 +1,12 @@
+title=Gruuve
+major_version=1
+minor_version=0
+build_version=1
+ui_resolutions=fhd
+splash_color=#111827
+splash_min_time=500
+mm_icon_focus_hd=pkg:/images/icon_hd.png
+mm_icon_focus_fhd=pkg:/images/icon_fhd.png
+splash_screen_fhd=pkg:/images/splash_fhd.png
+server_url=__SERVER_URL__
+web_url=__WEB_URL__

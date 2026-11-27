@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="WorkoutPlayer" extends="Group">
+    <interface>
+        <field id="token" type="string" />
+        <field id="workout" type="assocarray" onChange="reset" />
+        <field id="exit" type="boolean" alwaysNotify="true" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/components/api.brs" />
+    <script type="text/brightscript" uri="pkg:/components/WorkoutPlayer.brs" />
+    <children>
+        <Rectangle id="progress" width="0" height="1080" color="0x2563EB33" />
+        <Label id="workoutName" translation="[80,60]" color="0x9CA3AFFF">
+            <Font role="font" uri="font:SystemFontFile" size="40" />
+        </Label>
+        <Label id="position" translation="[0,60]" width="1840" horizAlign="right" color="0x9CA3AFFF">
+            <Font role="font" uri="font:SystemFontFile" size="40" />
+        </Label>
+        <Label id="phase" translation="[0,220]" width="1920" horizAlign="center" color="0x9CA3AFFF">
+            <Font role="font" uri="font:BoldSystemFontFile" size="40" />
+        </Label>
+        <Label id="exerciseName" translation="[60,290]" width="1800" horizAlign="center" color="0xFFFFFFFF">
+            <Font role="font" uri="font:BoldSystemFontFile" size="120" />
+        </Label>
+        <Label id="clock" translation="[0,430]" width="1920" horizAlign="center" color="0xFFFFFFFF">
+            <Font role="font" uri="font:BoldSystemFontFile" size="300" />
+        </Label>
+        <Label id="upNext" translation="[0,840]" width="1920" horizAlign="center" color="0xE5E7EBFF">
+            <Font role="font" uri="font:SystemFontFile" size="48" />
+        </Label>
+        <Label id="hint" translation="[0,970]" width="1920" horizAlign="center" color="0x6B7280FF">
+            <Font role="font" uri="font:SystemFontFile" size="32" />
+        </Label>
+        <SoundEffect id="nextSound" uri="pkg:/sounds/next.wav" />
+        <SoundEffect id="roundSound" uri="pkg:/sounds/round.wav" />
+        <Timer id="ticker" duration="1" repeat="true" />
+    </children>
+</component>

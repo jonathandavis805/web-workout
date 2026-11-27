@@ -1,4 +1,4 @@
-import type { Workout, User, WorkoutCompletion } from './types';
+import type { Workout, User, WorkoutCompletion, TvDevice } from './types';
 
 const API_URL = '/api';
 
@@ -95,4 +95,24 @@ export const getWorkoutCompletions = async (): Promise<WorkoutCompletion[]> => {
   const response = await fetch(`${API_URL}/workout-completions`);
   if (!response.ok) throw new Error('Failed to fetch workout completions');
   return response.json();
+};
+
+export const claimTvCode = async (code: string): Promise<void> => {
+  const response = await fetch(`${API_URL}/tv/pair/claim`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  if (!response.ok) throw new Error('Failed to pair TV');
+};
+
+export const getTvDevices = async (): Promise<TvDevice[]> => {
+  const response = await fetch(`${API_URL}/tv/devices`);
+  if (!response.ok) throw new Error('Failed to fetch TVs');
+  return response.json();
+};
+
+export const unpairTvDevice = async (id: number): Promise<void> => {
+  const response = await fetch(`${API_URL}/tv/devices/${id}`, { method: 'DELETE' });
+  if (!response.ok) throw new Error('Failed to unpair TV');
 };
