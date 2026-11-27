@@ -9,7 +9,7 @@ STATE=$(mktemp -d)
 trap 'kill $SERVER 2>/dev/null; rm -rf "$STATE"' EXIT
 
 npx wrangler d1 migrations apply gruuve-db --local --persist-to "$STATE" >/dev/null
-npx wrangler pages dev --port $PORT --persist-to "$STATE" >"$STATE/server.log" 2>&1 &
+npx wrangler pages dev --port $PORT --persist-to "$STATE" --binding REVIEW_PASSWORD=letmein >"$STATE/server.log" 2>&1 &
 SERVER=$!
 curl -s -o /dev/null --retry 60 --retry-connrefused --retry-delay 1 "$B/"
 
@@ -31,6 +31,12 @@ check "login redirect" "$(echo "$loc" | grep -o 'redirect_uri=[^&]*')" "redirect
 check "login state cookie" "$(echo "$loc" | grep -o 'oauth_state=[^;]*; Path=/; HttpOnly; SameSite=Lax' | wc -l | tr -d ' ')" 1
 check "authorize bad state" "$(code -H 'Cookie: oauth_state=x' "$B/authorize?code=c&state=y")" 400
 check "user" "$(curl -s -H "$A" $B/api/user)" '{"id":1,"email":"a@x.test","name":"Alice"}'
+check "review page" "$(code $B/review)" 200
+check "review wrong password" "$(code -d password=nope $B/review)" 401
+review_user() { curl -s -H "Cookie: $(curl -s -D - -o /dev/null -d password=letmein $B/review | tr -d '\r' | grep -o 'session=[^;]*')" $B/api/user; }
+RU=$(review_user)
+check "review sign-in" "$(echo "$RU" | grep -o '"name":"App Reviewer"')" '"name":"App Reviewer"'
+check "review reuses account" "$(review_user)" "$RU"
 
 W=$(curl -s -H "$A" -H 'Content-Type: application/json' -d '{"name":"Test","circuits":2,"isPublic":true,"exercises":[{"name":"Squats","duration":30},{"name":"Plank","duration":60}]}' $B/api/workouts)
 ID=$(echo "$W" | sed -E 's/.*"id":([0-9]+),"name":"Test".*/\1/')

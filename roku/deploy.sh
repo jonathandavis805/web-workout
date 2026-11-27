@@ -24,3 +24,19 @@ curl -sS --fail --digest --user "rokudev:$ROKU_DEV_PASSWORD" \
   -F "mysubmit=Install" -F "archive=@$build/gruuve.zip" \
   "http://$ROKU_IP/plugin_install" \
   | grep -oE "Install Success|Install Failure[^<]*|Identical to previous version[^<]*" | sort -u
+
+if [ -z "${ROKU_SIGN_PASSWORD:-}" ]; then
+  echo "ROKU_SIGN_PASSWORD not set; skipping store package."
+  exit 0
+fi
+version="$(grep -E '^(major|minor|build)_version=' "$here/manifest" | cut -d= -f2 | paste -sd. -)"
+page="$(curl -sS --fail --digest --user "rokudev:$ROKU_DEV_PASSWORD" \
+  -F "mysubmit=Package" -F "app_name=Gruuve/$version" -F "passwd=$ROKU_SIGN_PASSWORD" -F "pkg_time=$(date +%s)000" \
+  "http://$ROKU_IP/plugin_package")"
+pkg="$(grep -oE 'pkgs/+P[A-Za-z0-9_]+\.pkg' <<<"$page" | head -1 | sed 's|//*|/|')"
+if [ -z "$pkg" ]; then
+  echo "Packaging failed. Check ROKU_SIGN_PASSWORD matches the key on this Roku." >&2
+  exit 1
+fi
+curl -sS --fail --digest --user "rokudev:$ROKU_DEV_PASSWORD" -o "$build/gruuve-$version.pkg" "http://$ROKU_IP/$pkg"
+echo "Built $build/gruuve-$version.pkg"

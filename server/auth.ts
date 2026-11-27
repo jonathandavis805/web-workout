@@ -103,18 +103,53 @@ export async function authorize(request: Request, env: Env): Promise<Response> {
       .bind(info.email, info.name ?? info.email, info.sub)
       .first<{ id: number }>());
   if (!user) return new Response("Authentication failed", { status: 400 });
+  return startSession(request, env, user.id);
+}
 
+async function startSession(request: Request, env: Env, userId: number): Promise<Response> {
   const token = randomToken();
   const now = new Date();
   await env.DB.batch([
     env.DB.prepare("DELETE FROM session WHERE expires_at < ?").bind(now.toISOString()),
     env.DB.prepare("INSERT INTO session (token_hash, user_id, expires_at) VALUES (?, ?, ?)").bind(
       await sha256(token),
-      user.id,
+      userId,
       new Date(now.getTime() + SESSION_SECONDS * 1000).toISOString(),
     ),
   ]);
   return redirect("/", [cookie(request, SESSION_COOKIE, token, SESSION_SECONDS), cookie(request, STATE_COOKIE, "", 0)]);
+}
+
+function reviewPage(failed: boolean): Response {
+  const html = `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Gruuve reviewer sign-in</title></head>
+<body style="font-family: system-ui, sans-serif; max-width: 24rem; margin: 4rem auto; padding: 0 1.25rem; color: #111827">
+<h1 style="font-size: 1.5rem">Reviewer sign-in</h1>
+${failed ? '<p style="color: #b91c1c">Wrong password.</p>' : ""}
+<form method="post">
+<input type="password" name="password" placeholder="Password" autofocus required style="width: 100%; padding: 0.6rem; font-size: 1rem; box-sizing: border-box">
+<button type="submit" style="margin-top: 0.75rem; width: 100%; padding: 0.6rem; font-size: 1rem; background: #2563eb; color: white; border: 0; border-radius: 0.5rem">Sign in</button>
+</form>
+</body>
+</html>`;
+  return new Response(html, { status: failed ? 401 : 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+// Password sign-in for app store reviewers, who can't get past Google's new-device checks on a shared test account.
+export async function reviewLogin(request: Request, env: Env): Promise<Response> {
+  if (!env.REVIEW_PASSWORD) return new Response("Not found", { status: 404 });
+  if (request.method !== "POST") return reviewPage(false);
+
+  const password = String((await request.formData()).get("password") ?? "");
+  if ((await sha256(password)) !== (await sha256(env.REVIEW_PASSWORD))) return reviewPage(true);
+
+  const user = await env.DB.prepare(
+    `INSERT INTO user (email, name, oauth_provider, oauth_id) VALUES ('review@gruuveworkout.com', 'App Reviewer', 'review', 'review')
+     ON CONFLICT (oauth_provider, oauth_id) DO UPDATE SET name = name RETURNING id`,
+  ).first<{ id: number }>();
+  if (!user) return new Response("Authentication failed", { status: 400 });
+  return startSession(request, env, user.id);
 }
 
 export async function logout(request: Request, env: Env): Promise<Response> {
