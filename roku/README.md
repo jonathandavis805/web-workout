@@ -8,13 +8,12 @@ A Roku channel that pairs with your Gruuve account and plays your workouts on th
 2. Sideload the channel:
 
    ```bash
-   SERVER_URL=http://<your-computer-ip>:5000 \
-   WEB_URL=http://localhost:5174 \
+   SERVER_URL=https://gruuveworkout.com \
    ROKU_IP=<roku-ip> ROKU_DEV_PASSWORD=<password> \
    ./deploy.sh
    ```
 
-   - `SERVER_URL` is the Flask server the TV calls. It must be reachable from the TV, so use your computer's LAN IP (not `localhost`) when running locally, or the production URL.
+   - `SERVER_URL` is the Gruuve site the TV calls. For a local `npm run dev` server use your computer's LAN IP and port 8788, since the TV can't reach `localhost`.
    - `WEB_URL` is the website address shown on the pairing screen. It defaults to `SERVER_URL`.
    - Leave out `ROKU_IP` to only build `build/gruuve.zip`, which you can upload at `http://<roku-ip>` instead.
 

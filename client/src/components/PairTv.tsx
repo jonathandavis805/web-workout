@@ -79,7 +79,7 @@ export const PairTv = () => {
 								<p className="font-medium text-gray-900">{device.name || 'TV'}</p>
 								{device.pairedAt && (
 									<p className="text-sm text-gray-500">
-										Paired {new Date(device.pairedAt + 'Z').toLocaleDateString()}
+										Paired {new Date(device.pairedAt).toLocaleDateString()}
 									</p>
 								)}
 							</div>

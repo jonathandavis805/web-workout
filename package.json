@@ -1,0 +1,19 @@
+{
+  "name": "gruuve",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix client run build",
+    "dev": "npm run build && npm run migrate:local && wrangler pages dev",
+    "typecheck": "tsc -p tsconfig.json",
+    "migrate:local": "wrangler d1 migrations apply gruuve-db --local",
+    "migrate:remote": "wrangler d1 migrations apply gruuve-db --remote",
+    "deploy": "npm run build && npm run migrate:remote && wrangler pages deploy client/dist --project-name=gruuve",
+    "test": "bash scripts/smoke-test.sh"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261127.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.162.0"
+  }
+}
